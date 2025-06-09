@@ -1,0 +1,33 @@
+input:
+  http_server:
+    address: ""
+    path: "/"
+
+    allowed_verbs: [ GET, POST ]
+    sync_response:
+      status: "200"
+      headers:
+        Content-Type: application/json
+    timeout: 5s
+
+
+pipeline:
+  processors:
+    - bloblang: |
+        meta "topic_name" = @http_server_request_path.trim_prefix("/")
+    - bloblang: |
+        meta "kafka_key" = if this.id != null {
+          this.id
+        } else if this.key != null {
+          this.key
+        } else {
+          deleted()
+        }
+    - mutation: |
+        root.msg_created_at = now()
+
+output:
+  kafka_franz:
+    seed_brokers: ["redpanda-0:9092"]
+    topic: ${! metadata("topic_name") }
+    key: ${! metadata("kafka_key") }

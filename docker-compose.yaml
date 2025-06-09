@@ -1,0 +1,245 @@
+name: redpanda
+volumes:
+  redpanda-0: null
+  redpanda-1: null
+  redpanda-2: null
+
+networks:
+  redpanda_network:
+    driver: bridge
+services:
+  redpanda-0:
+    image: docker.redpanda.com/redpandadata/redpanda:v${REDPANDA_VERSION:?Set a Redpanda version}
+    container_name: redpanda-0
+    command:
+      - redpanda 
+      - start
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${KAFKA_0_EXTERNAL_PORT}
+      - --advertise-kafka-addr internal://redpanda-0:9092,external://localhost:${KAFKA_0_EXTERNAL_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${PANDAPROXY_0_EXTERNAL_PORT}
+      - --advertise-pandaproxy-addr internal://redpanda-0:8082,external://localhost:${PANDAPROXY_0_EXTERNAL_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${SCHEMA_REGISTRY_0_EXTERNAL_PORT}
+      - --rpc-addr redpanda-0:${RPC_PORT}
+      - --advertise-rpc-addr redpanda-0:${RPC_PORT}
+    ports:
+      - ${SCHEMA_REGISTRY_0_EXTERNAL_PORT}:${SCHEMA_REGISTRY_0_EXTERNAL_PORT}
+      - ${PANDAPROXY_0_EXTERNAL_PORT}:${PANDAPROXY_0_EXTERNAL_PORT}
+      - ${KAFKA_0_EXTERNAL_PORT}:${KAFKA_0_EXTERNAL_PORT}
+      - ${ADMIN_0_EXTERNAL_PORT}:9644
+    volumes:
+      - redpanda-0:/var/lib/redpanda/data
+      - ./conf/.bootstrap.yaml:/etc/redpanda/.bootstrap.yaml
+    networks:
+      - redpanda_network
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+    restart: unless-stopped
+
+  redpanda-1:
+    image: docker.redpanda.com/redpandadata/redpanda:v${REDPANDA_VERSION:?Set a Redpanda version}
+    container_name: redpanda-1
+
+    command:
+      - redpanda 
+      - start
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${KAFKA_1_EXTERNAL_PORT}
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:${KAFKA_1_EXTERNAL_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${PANDAPROXY_1_EXTERNAL_PORT}
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:${PANDAPROXY_1_EXTERNAL_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${SCHEMA_REGISTRY_1_EXTERNAL_PORT}
+      - --rpc-addr redpanda-1:${RPC_PORT}
+      - --advertise-rpc-addr redpanda-1:${RPC_PORT}
+      - --seeds redpanda-0:${RPC_PORT}
+    ports:
+      - ${SCHEMA_REGISTRY_1_EXTERNAL_PORT}:${SCHEMA_REGISTRY_1_EXTERNAL_PORT}
+      - ${PANDAPROXY_1_EXTERNAL_PORT}:${PANDAPROXY_1_EXTERNAL_PORT}
+      - ${KAFKA_1_EXTERNAL_PORT}:${KAFKA_1_EXTERNAL_PORT}
+      - ${ADMIN_1_EXTERNAL_PORT}:9644
+    depends_on:
+      - redpanda-0
+    volumes:
+      - redpanda-1:/var/lib/redpanda/data
+      - ./conf/.bootstrap.yaml:/etc/redpanda/.bootstrap.yaml
+    networks:
+      - redpanda_network
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+    restart: unless-stopped
+
+  redpanda-2:
+    image: docker.redpanda.com/redpandadata/redpanda:v${REDPANDA_VERSION:?Set a Redpanda version}
+    container_name: redpanda-2
+    command:
+      - redpanda 
+      - start
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:${KAFKA_2_EXTERNAL_PORT}
+      - --advertise-kafka-addr internal://redpanda-2:9092,external://localhost:${KAFKA_2_EXTERNAL_PORT}
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:${PANDAPROXY_2_EXTERNAL_PORT}
+      - --advertise-pandaproxy-addr internal://redpanda-2:8082,external://localhost:${PANDAPROXY_2_EXTERNAL_PORT}
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:${SCHEMA_REGISTRY_2_EXTERNAL_PORT}
+      - --rpc-addr redpanda-2:${RPC_PORT}
+      - --advertise-rpc-addr redpanda-2:${RPC_PORT}
+      - --seeds redpanda-0:${RPC_PORT}
+    ports:
+      - ${SCHEMA_REGISTRY_2_EXTERNAL_PORT}:${SCHEMA_REGISTRY_2_EXTERNAL_PORT}
+      - ${PANDAPROXY_2_EXTERNAL_PORT}:${PANDAPROXY_2_EXTERNAL_PORT}
+      - ${KAFKA_2_EXTERNAL_PORT}:${KAFKA_2_EXTERNAL_PORT}
+      - ${ADMIN_2_EXTERNAL_PORT}:9644
+    depends_on:
+      - redpanda-0
+    volumes:
+      - redpanda-2:/var/lib/redpanda/data
+      - ./conf/.bootstrap.yaml:/etc/redpanda/.bootstrap.yaml
+    networks:
+      - redpanda_network
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy:.+true' || exit 1"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+    restart: unless-stopped
+
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v${REDPANDA_CONSOLE_VERSION:?Set a Redpanda Console version}
+    container_name: redpanda-console
+    volumes:
+      - ./conf/redpanda-console-config.yaml:/tmp/config.yaml
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yaml
+      
+    ports:
+      - ${CONSOLE_PORT}:8080
+    networks:
+      - redpanda_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://redpanda-console:8080/api/cluster/kafka"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: kafka-connect
+    depends_on:
+      - redpanda-0
+      - redpanda-1
+      - redpanda-2
+    ports:
+      - "8083:8083"
+    environment:
+      
+      CONNECT_BOOTSTRAP_SERVERS: "redpanda-0:9092,redpanda-1:9092,redpanda-2:9092"
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: kafka-connect
+      CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: _connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://redpanda-0:8081'
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "3"
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/kafka/connect/
+    volumes:
+      - $PWD/data:/data
+    networks:
+      - redpanda_network
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing Connector"
+        confluent-hub install --no-prompt tabular/iceberg-kafka-connect:latest
+        confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
+        confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
+        echo "Launching Kafka Connect worker"
+        exec /etc/confluent/docker/run
+        
+  ksqldb-server:
+    image: confluentinc/ksqldb-server:latest
+    container_name: ksqldb-server
+    depends_on:
+      - redpanda-0
+
+    ports:
+      - "${KSQLDB_PORT}:${KSQLDB_PORT}"
+    environment:
+
+      KSQL_CONFIG_DIR: "/etc/ksql"
+      KSQL_BOOTSTRAP_SERVERS: "redpanda-0:9092"
+      KSQL_HOST_NAME: ksqldb-server
+      KSQL_LISTENERS: "http://0.0.0.0:${KSQLDB_PORT}"
+      KSQL_SERVICE_ID: "${KSQLDB_SERVICE_ID}"
+      KSQL_SCHEMA_REGISTRY_REPLICATION_FACTOR: "${REPLICATION_FACTOR:-1}" 
+      KSQL_SCHEMA_REGISTRY_URL: "http://redpanda-0:8081"
+      KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "${KSQL_STREAM_AUTO_CREATE:-1}"
+      KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "${KSQL_TOPIC_AUTO_CREATE:-1}"
+    networks:
+      - redpanda_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://ksqldb-server:8088/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  ksqldb-cli:
+    image: confluentinc/ksqldb-cli:latest
+    container_name: ksqldb-cl      
+    depends_on:
+      - ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
+    networks:
+      - redpanda_network
+    restart: unless-stopped
+
+  connect:
+    container_name: redpanda-connect
+    
+    image: docker.redpanda.com/redpandadata/connect
+    networks:
+      - redpanda_network
+    ports:
+      - 4195:4195
+    depends_on:
+      - redpanda-0
+
+    command:
+      - -c
+      - /tmp/connect.yaml 
+    environment:
+      
+      REDPANDA_SCHEMA_REGISTRY: "http://redpanda-0:8081"
+      REDPANDA_BROKERS: "redpanda-0:9092"
+    volumes:
+      - ./redpanda-connect:/tmp
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep redpanda-connect | grep -v grep || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped

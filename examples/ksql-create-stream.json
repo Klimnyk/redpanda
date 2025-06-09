@@ -1,0 +1,5 @@
+{
+    "ksql": "CREATE STREAM invoice_stream (id INT, \"table\" STRING, invoice_num INT, date STRING, amount DOUBLE) WITH (KAFKA_TOPIC='readings', VALUE_FORMAT='JSON');",
+    "streamsProperties": {}
+  }
+  

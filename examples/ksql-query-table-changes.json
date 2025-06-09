@@ -1,0 +1,7 @@
+{
+  "ksql": "SELECT * FROM invoice_summary EMIT CHANGES;",
+  "streamProperties": {
+    "ksql.streams.auto.offset.reset": "earliest"
+  }
+}
+

@@ -1,0 +1,4 @@
+{
+  "ksql": "CREATE TABLE invoice_summary AS SELECT id, COUNT(*) AS count, SUM(amount) AS total_amount FROM invoice_stream GROUP BY id;",
+  "streamsProperties": {}
+}

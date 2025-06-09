@@ -1,0 +1,37 @@
+input:
+  http_server:
+    address: ""
+    path: /
+
+    allowed_verbs: [ GET, POST ]
+    sync_response:
+      status: "200"
+      headers:
+        Content-Type: application/json
+    # timeout: 5s
+
+pipeline:
+  processors:
+    - branch:
+        request_map: |-
+          root = {
+            "model": "gpt-4o-mini",
+            "messages": [
+              {"role": "system", "content": "Переклади цей текст на українську мову."},
+              {"role": "user",   "content": this.string()}
+            ]
+          }
+        processors:
+          - http:
+              url: https://api.openai.com/v1/chat/completions
+              verb: POST
+              headers:
+                Authorization: "Bearer ${OPENAI_API_KEY}"
+                Content-Type: "application/json"
+        result_map: |-
+          root.translated = this.choices.index(0).message.content.or("")
+
+output:
+  kafka_franz:
+    seed_brokers: ["redpanda-0:9092"]
+    topic: "gpt_completions"

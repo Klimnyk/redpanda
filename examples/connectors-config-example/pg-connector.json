@@ -1,0 +1,13 @@
+{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "plugin.name": "pgoutput",
+  "database.hostname": "postgres",
+  "database.port": "5432",
+  "database.user": "postgresuser",
+  "name": "postgres-connector",
+  "database.password": "postgrespw",
+  "database.dbname": "pandashop",
+  "database.server.name": "postgres",
+  "table.include.list": "public.orders",
+  "topic.prefix": "dbz"
+}

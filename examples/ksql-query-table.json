@@ -1,0 +1,5 @@
+{
+    "ksql": "SELECT * FROM invoice_summary;",
+    "properties": {}
+  }
+  

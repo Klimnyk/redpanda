@@ -1,0 +1,85 @@
+
+#----------------------------------------------------------------------------
+# Kafka configuration
+#----------------------------------------------------------------------------
+kafka:
+  brokers: ["redpanda-0:9092", "redpanda-1:9092", "redpanda-2:9092"]
+#----------------------------------------------------------------------------
+# Schema Registry configuration (top-level)
+#----------------------------------------------------------------------------
+schemaRegistry:
+  enabled: true
+  urls: ["http://redpanda-0:8081","http://redpanda-1:8081","http://redpanda-2:8081"]
+#----------------------------------------------------------------------------
+# Admin Api configuration (top-level)
+#----------------------------------------------------------------------------
+
+redpanda:
+  adminApi:
+    enabled: true
+    urls: ["http://redpanda-0:9644","http://redpanda-1:9644","http://redpanda-2:9644"]
+    authentication:
+              impersonateUser: false
+
+
+#----------------------------------------------------------------------------
+# Kafka Connect configuration (optional)
+#----------------------------------------------------------------------------
+kafkaConnect:
+  enabled: true
+  connectTimeout: 15s
+  readTimeout: 60s
+  requestTimeout: 6s
+  clusters:
+      - name: kafka-connect connect
+        url: "http://kafka-connect:8083" 
+        tls:
+          enabled: false
+
+#----------------------------------------------------------------------------
+# Serde settings
+#----------------------------------------------------------------------------
+
+serde:
+  maxDeserializationPayloadSize: 20480
+
+
+#----------------------------------------------------------------------------
+# Console settings
+#----------------------------------------------------------------------------
+console:
+  topicDocumentation:
+    git:
+      enabled: false
+
+#----------------------------------------------------------------------------
+# Server settings
+#----------------------------------------------------------------------------
+server:
+  listenAddress: "0.0.0.0"
+  listenPort: 8080
+  httpsListenPort: 8081
+  advertisedHttpsListenPort: 443
+  gracefulShutdownTimeout: 30s
+  readTimeout: 30s
+  writeTimeout: 30s
+  idleTimeout: 30s
+  compressionLevel: 4
+  basePath: ""
+  setBasePathFromXForwardedPrefix: true
+  stripPrefix: true
+  tls:
+    enabled: false
+  allowedOrigins: []
+
+#----------------------------------------------------------------------------
+# Logger settings
+#----------------------------------------------------------------------------
+logger:
+  level: info
+
+#----------------------------------------------------------------------------
+# Analytics / telemetry (optional)
+#----------------------------------------------------------------------------
+analytics:
+  enabled: true

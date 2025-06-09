@@ -1,0 +1,20 @@
+{
+  "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+  "table.name.format": "table_test_topic",
+  "errors.log.include.messages": "true",
+  "connection.password": "password",
+  "tasks.max": "1",
+  "topics": "test_topic",
+  "auto.evolve": "true",
+  "connection.user": "username",
+  "value.converter.schemas.enable": "true",
+  "name": "postgres-sink-unique",
+  "errors.tolerance": "none",
+  "auto.create": "true",
+  "connection.url": "jdbc:postgresql://postgresqlhost:5432/dbname",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "insert.mode": "upsert",
+  "errors.log.enable": "true",
+  "pk.mode": "record_key",
+  "pk.fields": "key_id"
+}

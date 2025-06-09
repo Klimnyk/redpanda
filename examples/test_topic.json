@@ -1,0 +1,23 @@
+{
+    "records": [
+      {
+        "key": "unique_value_3",
+        "value": {
+          "schema": {
+            "type": "struct",
+            "fields": [
+              {
+                "type": "string",
+                "optional": false,
+                "field": "msg"
+              }
+            ],
+            "optional": false
+          },
+          "payload": {
+            "msg": "Перше повідомлення з унікальним ключем unique_value_3"
+          }
+        }
+      }
+    ]
+  }

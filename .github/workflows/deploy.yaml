@@ -1,0 +1,37 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: SSH to Server and Update Container
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ${{ secrets.SERVER_PROJECT_PATH }}
+            docker compose down
+            if [ ! -d ".git" ]; then
+              echo "Git repository not found. Cloning..."
+              git clone https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }} ${{ secrets.SERVER_PROJECT_PATH }}
+            else
+              git pull origin main
+            fi
+            cd ${{ secrets.SERVER_PROJECT_PATH }}
+            if [ ! -f "docker-compose.yaml" ]; then
+              echo "Error: docker-compose.yaml not found"
+              exit 1
+            fi
+            docker compose up -d --build
