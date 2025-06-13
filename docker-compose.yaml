@@ -141,8 +141,8 @@ services:
       - redpanda-0
       - redpanda-1
       - redpanda-2
-    ports:
-      - "8083:8083"
+    # ports:
+      # - "8083:8083"
     environment:
       
       CONNECT_BOOTSTRAP_SERVERS: "redpanda-0:9092,redpanda-1:9092,redpanda-2:9092"
