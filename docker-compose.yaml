@@ -141,8 +141,8 @@ services:
       - redpanda-0
       - redpanda-1
       - redpanda-2
-    # ports:
-      # - "8083:8083"
+    ports:
+      - "8083:8083"
     environment:
       
       CONNECT_BOOTSTRAP_SERVERS: "redpanda-0:9092,redpanda-1:9092,redpanda-2:9092"
@@ -160,7 +160,7 @@ services:
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "3"
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "3"
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "3"
-      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/kafka/connect/
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components,/kafka/connect/,/usr/share/confluent-hub-components/iceberg-kafka-connect
     volumes:
       - $PWD/data:/data
     networks:
@@ -169,10 +169,23 @@ services:
       - bash
       - -c
       - |
-        echo "Installing Connector"
-        confluent-hub install --no-prompt tabular/iceberg-kafka-connect:latest
+        echo "Installing Connectors"
         confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:latest
         confluent-hub install --no-prompt confluentinc/kafka-connect-s3:latest
+        # Install Iceberg connector - get latest version automatically
+        mkdir -p /usr/share/confluent-hub-components/iceberg-kafka-connect
+        cd /tmp
+        # Get latest release tag from GitHub API
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/tabular-io/iceberg-kafka-connect/releases/latest | grep tag_name | cut -d '"' -f 4)
+        echo "Installing Iceberg connector version: $LATEST_VERSION"
+        wget -q https://github.com/tabular-io/iceberg-kafka-connect/releases/download/$LATEST_VERSION/iceberg-kafka-connect-runtime-${LATEST_VERSION#v}.jar -O /usr/share/confluent-hub-components/iceberg-kafka-connect/iceberg-kafka-connect-runtime.jar
+        
+        # Get latest Iceberg core libraries
+        ICEBERG_VERSION=$(curl -s https://api.github.com/repos/apache/iceberg/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/apache-iceberg-//')
+        echo "Installing Iceberg core libraries version: $ICEBERG_VERSION"
+        wget -q https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-core/$ICEBERG_VERSION/iceberg-core-$ICEBERG_VERSION.jar -O /usr/share/confluent-hub-components/iceberg-kafka-connect/iceberg-core.jar
+        wget -q https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-api/$ICEBERG_VERSION/iceberg-api-$ICEBERG_VERSION.jar -O /usr/share/confluent-hub-components/iceberg-kafka-connect/iceberg-api.jar
+        wget -q https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-common/$ICEBERG_VERSION/iceberg-common-$ICEBERG_VERSION.jar -O /usr/share/confluent-hub-components/iceberg-kafka-connect/iceberg-common.jar
         echo "Launching Kafka Connect worker"
         exec /etc/confluent/docker/run
         
